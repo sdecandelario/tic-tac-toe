@@ -7,9 +7,10 @@ class Game extends React.Component {
         super();
         this.state = {
             history: [{
-                squares: new Array(9).fill(null)
+                squares: new Array(9).fill(null),
             }],
             stepNumber: 0,
+            gameSteps: new Array(9).fill({column: null, row: null}),
             xIsNext: true
         };
     }
@@ -18,16 +19,24 @@ class Game extends React.Component {
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
         const squares = current.squares.slice();
+        const gameSteps = this.state.gameSteps.slice();
         if (this.calculateWinner(squares) || squares[i]) {
             return;
         }
+
         squares[i] = this.state.xIsNext ? "X" : "O";
+        gameSteps[history.length] = {
+            column: ((i % 3) + 1),
+            row: (Math.floor(i / 3) + 1)
+        };
+
         this.setState({
             history: history.concat([
                 {
-                    squares: squares
+                    squares,
                 }
             ]),
+            gameSteps,
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext
         });
@@ -69,7 +78,8 @@ class Game extends React.Component {
         const nextPlayer = (this.state.xIsNext) ? "X" : "O";
 
         const moves = history.map((step, move) => {
-            const desc = move ? "Move #" + move : "Game start";
+            const gameStep = this.state.gameSteps[move];
+            const desc = move ? "Move #" + move + " (R" + gameStep.row + ", C" + gameStep.column + ")" : "Game start";
             return (
                 <li key={move}>
                     <a href="#" onClick={() => this.jumpTo(move)}>{desc}</a>
